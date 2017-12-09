@@ -34,6 +34,8 @@ int checkBadBalance(int ni){
 	int w = nodes[n->children[0]].accum_weight;
 	for (int i = 1; i < n->num_children; i++){
 		if (w != nodes[n->children[i]].accum_weight){
+			printf(">>>>> bad %s %i\n", n->name, n->accum_weight);
+				for (int j = 0; j < n->num_children; j++) printf("--- %s %i (%i)\n", nodes[n->children[j]].name, nodes[n->children[j]].weight, nodes[n->children[j]].accum_weight);
 			return nodes[n->children[i]].weight - (nodes[n->children[i]].accum_weight - nodes[n->children[0]].accum_weight);
 		}
 	}
@@ -98,16 +100,14 @@ int addNode(char *line){
 }
 
 void printdebug(int depth, struct Node *n){
-	char indent[50] = "";
-	int d = depth;
-	indent[d + 1] = 0;
-	while(d > 0){
-		indent[d] = ' ';
-		d--;
-	}
+	char indent[10] = "";
+	int d;
+	for (d = 0; d < depth*2; d++) { indent[d] = ' '; }
+	indent[d] = 0;
+
 	printf("%s%s %i (%i)\n", indent, n->name, n->weight, n->accum_weight);
 	for (int i = 0; i < n->num_children; i++) {
-		printf("--- %s\n", nodes[n->children[i]].name);
+		//printf("--- %s\n", nodes[n->children[i]].name);
 		printdebug(depth + 1, &(nodes[n->children[i]]));
 	}
 }
