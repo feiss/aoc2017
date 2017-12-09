@@ -27,31 +27,16 @@ int calcAccumWeights(struct Node *n){
 	return a;
 }
 
-int checkBadBalance(int ni, int &correct_balance){
+int checkBadBalance(int ni){
 	struct Node *n = &(nodes[ni]);
-	int *w = (int*)calloc(n->num_children, sizeof(int));
-	int *nw= (int*)calloc(n->num_children, sizeof(int));
+	if (n->num_children < 2) return 0;
 
-	int w0 = nodes[n->children[0]].accum_weight;
-	int w1 = nodes[n->children[1]].accum_weight;
-	int w2 = nodes[n->children[2]].accum_weight;
-
-	if (w0 != w1 &&  w1 == w2){
-
-	}
-
-	for (int i = 0; i < n->num_children; i++){
-		w[i] = nodes[n->children[0]].accum_weight;
-		nw[i]++;
-	}
-	
-	if (nodes[n->children[i]].accum_weight != w) {
-			*correct_balance = nodes[n->children[i]].accum_weight - w;
-			return n->children[i];
+	int w = nodes[n->children[0]].accum_weight;
+	for (int i = 1; i < n->num_children; i++){
+		if (w != nodes[n->children[i]].accum_weight){
+			return nodes[n->children[i]].weight - (nodes[n->children[i]].accum_weight - nodes[n->children[0]].accum_weight);
 		}
 	}
-	free(w);
-	free(nw);
 
 	int bad = 0;
 	for (int i = 0; i < n->num_children; i++){
@@ -112,6 +97,21 @@ int addNode(char *line){
 	return 1;
 }
 
+void printdebug(int depth, struct Node *n){
+	char indent[50] = "";
+	int d = depth;
+	indent[d + 1] = 0;
+	while(d > 0){
+		indent[d] = ' ';
+		d--;
+	}
+	printf("%s%s %i (%i)\n", indent, n->name, n->weight, n->accum_weight);
+	for (int i = 0; i < n->num_children; i++) {
+		printf("--- %s\n", nodes[n->children[i]].name);
+		printdebug(depth + 1, &(nodes[n->children[i]]));
+	}
+}
+
 void main(void){
 	FILE *f = fopen("input", "rt");
 	char line[1024];
@@ -126,11 +126,13 @@ void main(void){
 		if (nodes[i].parent == -1) root = i;
 	}
 
+
 	calcAccumWeights(&(nodes[root]));
+	printdebug(0, &(nodes[root]));
 	//printf("%s weight: %i, accum: %i\n", nodes[root].name, nodes[root].weight, nodes[root].accum_weight);
 	
-	int correct_balance = 0;
-	int unbalanced_node = checkBadBalance(root, &correct_balance);
-	printf("unbalanced %s: %i -> %i\n", nodes[unbalanced_node].name, nodes[unbalanced_node].accum_weight, correct_balance);
+	int correct_balance = checkBadBalance(root);
+
+	printf("correct balance %i\n", correct_balance);
 	fclose(f);
 }
